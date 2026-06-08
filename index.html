@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800;900&family=Heebo:wght@400;500;700;800;900&family=Gveret+Levin+AlefAlefAlef&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="home.css">
 <meta name="ext-resource-dependency" content="assets/products/sq-001.webp" data-resource-id="sq-001" />
-<meta name="ext-resource-dependency" content="assets/products/sq-004.webp" data-resource-id="sq-004" />
 <meta name="ext-resource-dependency" content="assets/products/sq-015.webp" data-resource-id="sq-015" />
 <meta name="ext-resource-dependency" content="assets/products/sq-019.webp" data-resource-id="sq-019" />
 <meta name="ext-resource-dependency" content="assets/products/sq-022.webp" data-resource-id="sq-022" />
@@ -123,21 +122,21 @@
   </section>
 
   <!-- FUN FOLD 1: SQUISHY SLOT MACHINE -->
-  <section class="sec slot-sec" data-screen-label="slot">
+  <section class="sec squo-sec" data-screen-label="squishometer">
     <div class="container sec-head">
-      <span class="eyebrow reveal">משחק קטן</span>
-      <h2 class="reveal">הגרילו את הסקווישי <span class="script">שלכם</span></h2>
-      <p class="reveal">לחצו על הכפתור וגלו איזה סקווישי מתאים לכם היום.</p>
+      <span class="eyebrow reveal">מד-הלחיצה</span>
+      <h2 class="reveal">כמה חזק תוכלו <span class="script">ללחוץ</span>?</h2>
+      <p class="reveal">לחצו והחזיקו את הסקווישי עד למקסימום — ותשחררו הפתעה 🎁</p>
     </div>
     <div class="container">
-      <div class="slot reveal">
-        <div class="slot-reels">
-          <div class="reel"><div class="reel-strip" id="reel0"></div></div>
-          <div class="reel"><div class="reel-strip" id="reel1"></div></div>
-          <div class="reel"><div class="reel-strip" id="reel2"></div></div>
-        </div>
-        <button class="slot-btn" id="slotSpin" type="button">סובבו!</button>
-        <div class="slot-result" id="slotResult">לחצו לסיבוב 🎰</div>
+      <div class="squo reveal">
+        <div class="squo-meter" aria-hidden="true"><span class="squo-fill" id="squoFill"></span><span class="squo-max">מקס׳</span></div>
+        <button class="squo-pad" id="squoPad" type="button" aria-label="לחצו והחזיקו לחיצת הסקווישי">
+          <span class="squo-shadow"></span>
+          <img id="squoImg" src="assets/products/sq-001.png" alt="סקווישי ללחיצה">
+          <span class="squo-hint" id="squoHint">לחצו והחזיקו</span>
+        </button>
+        <div class="squo-result" id="squoResult" hidden></div>
       </div>
     </div>
   </section>
@@ -150,7 +149,12 @@
       <span class="promo-note">הזינו את הקוד בעמוד התשלום • בתוקף עד 30.6 • לא בתוקף יחד עם מבצעים אחרים</span>
       <span class="promo-code"><span class="tag">קוד</span> <b>גיטה'לה</b></span>
     </div>
-    <button class="promo-dog dog-trigger" type="button" aria-label="נגן את סרטון הכלבה של איימי"><img src="assets/img/amy-dog.png" alt="הכלבה של איימי"><span class="dog-play" aria-hidden="true">▶</span></button>
+    <button class="promo-dog dog-trigger" type="button" aria-label="לחצו על הכלבה של איימי">
+      <img class="dog-still" src="assets/img/amy-dog.png" alt="הכלבה של איימי">
+      <video class="dog-inline" id="dogInline" playsinline muted loop preload="none" poster="assets/img/amy-dog.png">
+        <source src="assets/media/dog-video.mp4" type="video/mp4">
+      </video>
+    </button>
   </section>
 
   <!-- PORTAL — original Apple-tier customer portal -->
@@ -225,18 +229,21 @@
     </div>
   </section>
 
-  <!-- FUN FOLD 3: BUILD A GIFT BOX -->
-  <section class="sec gift-sec" data-screen-label="gift">
+  <!-- FUN FOLD 3: BLIND BAG MYSTERY REVEAL -->
+  <section class="sec blind-sec" data-screen-label="blindbag">
     <div class="container sec-head">
-      <span class="eyebrow reveal">התאמה אישית</span>
-      <h2 class="reveal">בנו מארז <span class="script">מתנה</span></h2>
-      <p class="reveal">בחרו עד 3 סקווישי — ונארוז לכם מארז מושלם, מוכן למשלוח.</p>
+      <span class="eyebrow reveal">שקית הפתעה</span>
+      <h2 class="reveal">פתחו שקית <span class="script">מסתורין</span></h2>
+      <p class="reveal">לחצו על השקית — וגלו איזה סקווישי מחכה לכם בפנים.</p>
     </div>
     <div class="container">
-      <div class="gift-card reveal">
-        <div class="gift-tray" id="giftTray"></div>
-        <div class="gift-grid" id="giftGrid"></div>
-        <button class="gift-btn" id="giftAdd" type="button" disabled>בחרו סקווישי למארז</button>
+      <div class="blind-card reveal">
+        <button class="blind-bag" id="blindBag" type="button" aria-label="פתחו את שקית ההפתעה">
+          <span class="bag-shine"></span>
+          <span class="bag-mark">?</span>
+          <span class="bag-label">לחצו לפתיחה</span>
+        </button>
+        <div class="blind-reveal" id="blindReveal" hidden></div>
       </div>
     </div>
   </section>
@@ -370,12 +377,31 @@
 <script>
 (function(){
   var modal=document.getElementById("dogModal"),video=document.getElementById("dogVideo"),audio=document.getElementById("dogAudio");
-  if(!modal)return;
-  function open(){modal.hidden=false;document.body.style.overflow="hidden";try{video.currentTime=0;video.play();}catch(e){}try{audio.currentTime=0;audio.play();}catch(e){}}
-  function close(){modal.hidden=true;document.body.style.overflow="";try{video.pause();}catch(e){}try{audio.pause();}catch(e){}}
-  document.querySelectorAll(".dog-trigger").forEach(function(b){b.addEventListener("click",open);});
-  modal.querySelectorAll("[data-dog-close]").forEach(function(el){el.addEventListener("click",close);});
-  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!modal.hidden)close();});
+  var trigger=document.querySelector(".dog-trigger"),inline=document.getElementById("dogInline");
+  if(!trigger)return;
+  var mq=window.matchMedia("(max-width:767px)");
+  // DESKTOP modal
+  function openModal(){modal.hidden=false;document.body.style.overflow="hidden";try{video.currentTime=0;video.play();}catch(e){}try{audio.currentTime=0;audio.play();}catch(e){}}
+  function closeModal(){if(!modal)return;modal.hidden=true;document.body.style.overflow="";try{video.pause();}catch(e){}try{audio.pause();}catch(e){}}
+  if(modal){modal.querySelectorAll("[data-dog-close]").forEach(function(el){el.addEventListener("click",closeModal);});document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!modal.hidden)closeModal();});}
+  // MOBILE inline zoom + play (no popup)
+  var mAudio=audio;
+  function playInline(){
+    trigger.classList.add("is-playing");
+    try{inline.currentTime=0;inline.muted=true;inline.play();}catch(e){}
+    try{mAudio.currentTime=0;mAudio.play();}catch(e){}
+  }
+  function stopInline(){
+    trigger.classList.remove("is-playing");
+    try{inline.pause();inline.currentTime=0;}catch(e){}
+    try{mAudio.pause();}catch(e){}
+  }
+  if(inline){inline.addEventListener("ended",stopInline);if(mAudio)mAudio.addEventListener("ended",stopInline);}
+  trigger.addEventListener("click",function(){
+    if(mq.matches){
+      if(trigger.classList.contains("is-playing"))stopInline();else playInline();
+    }else{openModal();}
+  });
 })();
 </script>
 <template id="__bundler_thumbnail" data-bg-color="#FF4D8D">

@@ -191,37 +191,41 @@ function celebrate(x,y,power){
  });
 }());
 
-/* ---------- FUN 1: squishy slot machine ---------- */
+/* ---------- FUN 1: SQUISH-O-METER (hold to squish, jelly physics) ---------- */
 (function(){
- var spin=$('#slotSpin'),res=$('#slotResult');if(!spin)return;
- var pool=FEAT.map(function(p){return p;});
- var strips=[$('#reel0'),$('#reel1'),$('#reel2')];
- function fill(strip){
-  var html='';for(var i=0;i<24;i++){var p=pool[Math.floor(Math.random()*pool.length)];html+='<div class="face"><img src="'+imgUrl(p.img)+'" alt=""></div>';}
-  strip.innerHTML=html;return strip;
+ var pad=$('#squoPad'),img=$('#squoImg'),fill=$('#squoFill'),hint=$('#squoHint'),res=$('#squoResult');
+ if(!pad)return;
+ var holding=false,level=0,raf=null,maxed=false;
+ var REWARD={img:'sq-057',n:'נידו קפיברה ענק'};
+ function setSquish(t){ // t 0..1 jelly compression
+  var sx=1+t*0.34, sy=1-t*0.30; // squash & stretch
+  img.style.transform='scale('+sx.toFixed(3)+','+sy.toFixed(3)+')';
+  fill.style.width=Math.round(level*100)+'%';
  }
- strips.forEach(fill);
- var spinning=false;
- spin.addEventListener('click',function(){
-  if(spinning)return;spinning=true;spin.disabled=true;res.textContent='מסובבים…';
-  var picks=[];
-  strips.forEach(function(strip,idx){
-   fill(strip);
-   var landIdx=18+Math.floor(Math.random()*4);
-   var p=pool[Math.floor(Math.random()*pool.length)];picks[idx]=p;
-   // place chosen face at landing slot
-   var faces=strip.children;if(faces[landIdx])faces[landIdx].innerHTML='<img src="'+imgUrl(p.img)+'" alt="">';
-   strip.style.transition='none';strip.style.transform='translateY(0)';
-   void strip.offsetWidth;
-   strip.style.transition='transform '+(1.1+idx*0.35)+'s cubic-bezier(.15,.85,.25,1)';
-   strip.style.transform='translateY(-'+(landIdx*108)+'px)';
-  });
-  setTimeout(function(){
-   spinning=false;spin.disabled=false;
-   res.innerHTML='הסקווישי שלכם: <b>'+picks[2].n+'</b> 🎉';
-   var r=$('.slot').getBoundingClientRect();celebrate(r.left+r.width/2,r.top+r.height*0.4,26);
-  },1.1+2*0.35+0.15+700);
- });
+ function loop(){
+  if(holding){ level=Math.min(1,level+0.022); }
+  else { level=Math.max(0,level-0.05); }
+  // springy easing for visual squish
+  setSquish(level);
+  if(holding && level>=1 && !maxed){ maxed=true; reward(); }
+  if(holding || level>0){ raf=requestAnimationFrame(loop); } else { raf=null; img.style.transform=''; }
+ }
+ function start(e){ if(e&&e.cancelable)e.preventDefault(); if(maxed)return; holding=true; pad.classList.add('squishing'); if(hint)hint.style.opacity='0'; if(!raf)raf=requestAnimationFrame(loop); }
+ function end(){ holding=false; pad.classList.remove('squishing'); if(!raf)raf=requestAnimationFrame(loop); }
+ function reward(){
+  pad.classList.add('pop');
+  var r=pad.getBoundingClientRect();celebrate(r.left+r.width/2,r.top+r.height*0.35,34);
+  if(res){res.hidden=false;res.innerHTML='<span class="squo-kick">לחצתם למקסימום! 🎉</span>'+
+   '<span class="squo-prize">קוד מתנה ללחיצה המושלמת</span>'+
+   '<span class="squo-code"><b>SQUISH15</b> — 15% הנחה</span>'+
+   '<button class="squo-again" type="button">ללחוץ שוב ↺</button>';}
+  setTimeout(function(){ holding=false; },50);
+ }
+ pad.addEventListener('pointerdown',start);
+ window.addEventListener('pointerup',end);
+ pad.addEventListener('pointercancel',end);
+ pad.addEventListener('pointerleave',function(){ if(!maxed)end(); });
+ if(res){res.addEventListener('click',function(e){ if(e.target.closest('.squo-again')){ maxed=false;level=0;res.hidden=true;pad.classList.remove('pop');if(hint)hint.style.opacity=''; } });}
 }());
 
 /* ---------- FUN 2: color the squishy ---------- */
@@ -259,37 +263,41 @@ function celebrate(x,y,power){
  render();
 }());
 
-/* ---------- FUN 3: build a gift box ---------- */
+/* ---------- FUN 3: BLIND BAG MYSTERY REVEAL ---------- */
 (function(){
- var grid=$('#giftGrid'),tray=$('#giftTray'),totalEl=$('#giftTotal'),btn=$('#giftAdd');if(!grid||!tray)return;
- var items=FEAT.slice(0,6),sel=[];
- grid.innerHTML=items.map(function(p,i){
-  return '<button class="gift-item" type="button" data-i="'+i+'"><div class="gi-media"><img src="'+imgUrl(p.img)+'" alt="'+p.n+'"></div>'+
-   '<div class="gi-name">'+p.n+'</div><span class="gi-check">✓</span></button>';
- }).join('');
- function refresh(){
-  if(sel.length===0){tray.innerHTML='<span class="gift-empty">המארז שלכם ריק — בחרו עד 3 סקווישי</span>';}
-  else{tray.innerHTML=sel.map(function(i){return '<span class="gift-slot"><img src="'+imgUrl(items[i].img)+'" alt=""></span>';}).join('')+
-    Array(Math.max(0,3-sel.length)).fill('<span class="gift-slot empty"></span>').join('');}
-  btn.disabled=sel.length===0;
-  btn.textContent=sel.length===0?'בחרו סקווישי למארז':('הוסיפו מארז לעגלה ('+sel.length+')');
-  [].forEach.call(grid.children,function(b){var i=+b.getAttribute('data-i');b.classList.toggle('on',sel.indexOf(i)>=0);});
+ var bag=$('#blindBag'),out=$('#blindReveal');if(!bag||!out)return;
+ // wide pool from the catalog for variety
+ var POOL=['sq-057','sq-001','sq-015','sq-039','sq-070','sq-076','sq-022','sq-019','sq-080','sq-082','sq-045'];
+ // map ids to FEAT names/prices where known, else generic
+ function info(id){
+  for(var i=0;i<FEAT.length;i++){if(FEAT[i].img===id)return FEAT[i];}
+  var names={'sq-076':'קוואי דובי ורוד','sq-022':'סקווישי מים נוצץ','sq-019':'סקווישי חול רך','sq-080':'מיני תות מתוק','sq-082':'ביצים פרצופים','sq-045':'אפוני נידו מצחיק'};
+  var prices={'sq-076':14.9,'sq-022':22.9,'sq-019':18.9,'sq-080':11.9,'sq-082':13.9,'sq-045':15.9};
+  return {img:id,n:names[id]||'סקווישי מפתיע',p:prices[id]||19.9};
  }
- grid.addEventListener('click',function(e){
-  var it=e.target.closest('.gift-item');if(!it)return;
-  var i=+it.getAttribute('data-i'),at=sel.indexOf(i);
-  if(at>=0)sel.splice(at,1);else{if(sel.length>=3){it.classList.add('shake');setTimeout(function(){it.classList.remove('shake');},400);return;}sel.push(i);}
-  refresh();
+ var opened=false;
+ bag.addEventListener('click',function(){
+  if(opened){reset();return;}
+  opened=true;bag.classList.add('opening');
+  setTimeout(function(){
+   var id=POOL[Math.floor(Math.random()*POOL.length)],p=info(id);
+   bag.classList.add('torn');
+   out.hidden=false;
+   out.innerHTML='<div class="br-burst" aria-hidden="true"></div>'+
+    '<div class="br-media"><img src="'+imgUrl(p.img)+'" alt="'+p.n+'"></div>'+
+    '<span class="br-kick">קיבלתם 🎉</span>'+
+    '<h3 class="br-name">'+p.n+'</h3>'+
+    '<div class="br-price">'+money(p.p)+'</div>'+
+    '<div class="br-actions">'+
+      '<a class="br-buy" href="shop.html">לקנייה בחנות ←</a>'+
+      '<button class="br-again" type="button">פתחו עוד שקית ↺</button>'+
+    '</div>';
+   var r=out.getBoundingClientRect();celebrate(r.left+r.width/2,r.top+r.height*0.32,30);
+   void out.offsetWidth;out.classList.add('show');
+  },560);
+  out.addEventListener('click',function(e){if(e.target.closest('.br-again'))reset();},{once:false});
  });
- btn.addEventListener('click',function(){
-  if(!sel.length)return;
-  var n=$('#cartN'),add=sel.length,cur=+(n&&n.textContent||0);
-  if(n){n.textContent=cur+add;n.classList.add('pop');setTimeout(function(){n.classList.remove('pop');},300);}
-  var dot=$('.tab .dot');if(dot)dot.textContent=cur+add;
-  var r=btn.getBoundingClientRect();celebrate(r.left+r.width/2,r.top,24);
-  sel=[];refresh();
- });
- refresh();
+ function reset(){opened=false;bag.classList.remove('opening','torn');out.classList.remove('show');out.hidden=true;out.innerHTML='';}
 }());
 
 /* ---------- FUN 4: make your own squishy from a photo ---------- */
@@ -297,44 +305,69 @@ function celebrate(x,y,power){
  var input=$('#makeInput'),canvas=$('#makeCanvas'),ph=$('#makePlaceholder'),load=$('#makeLoading'),save=$('#makeSave');
  if(!input||!canvas)return;
  var ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
- // real squishy doll base = LEFT baby cropped out of sq-001.png
- var base=new Image();base.crossOrigin='anonymous';base.src=imgUrl('sq-001');
- var CROP={sx:18,sy:26,sw:300,sh:658};
- // where the doll is drawn on the canvas
- function layout(){var dh=H-10,dw=dh*(CROP.sw/CROP.sh);return {dw:dw,dh:dh,dx:(W-dw)/2,dy:6};}
- // face oval on the doll's head (relative to crop): center + radii
- function face(){var d=layout();
-  return {x:d.dx+0.515*d.dw, y:d.dy+0.362*d.dh, rx:0.335*d.dw, ry:0.20*d.dh};}
+ // soft squishy-blob silhouette: a chubby rounded body with two little ear-nubs on top.
+ function blobPath(c,cx,cy,rx,ry){
+  c.beginPath();
+  var k=0.5523;
+  var topY=cy-ry, botY=cy+ry*1.06, lX=cx-rx, rX=cx+rx*1.0;
+  c.moveTo(cx,topY);
+  c.bezierCurveTo(cx+rx*k*1.05,topY, rX,cy-ry*k, rX,cy+ry*0.04);
+  c.bezierCurveTo(rX,cy+ry*k*1.12, cx+rx*k*0.92,botY, cx,botY);
+  c.bezierCurveTo(cx-rx*k*0.92,botY, lX,cy+ry*k*1.12, lX,cy+ry*0.04);
+  c.bezierCurveTo(lX,cy-ry*k, cx-rx*k*1.05,topY, cx,topY);
+  c.closePath();
+ }
+ function earNub(c,cx,cy,r){c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.closePath();}
  function squishify(photo){
   ctx.clearRect(0,0,W,H);
-  var d=layout(),f=face();
-  // 1) the REAL squishy doll
-  ctx.drawImage(base,CROP.sx,CROP.sy,CROP.sw,CROP.sh,d.dx,d.dy,d.dw,d.dh);
-  // 2) your face, cover-fit + clipped into the head, shaded to look moulded
+  var cx=W/2, cy=H*0.46, rx=W*0.40, ry=H*0.38;
+  var earR=rx*0.30, ear1x=cx-rx*0.62, ear2x=cx+rx*0.62, earY=cy-ry*0.88;
+  // 1) soft pedestal shadow under the squishy
   ctx.save();
-  ctx.beginPath();ctx.ellipse(f.x,f.y,f.rx,f.ry,0,0,Math.PI*2);ctx.closePath();ctx.clip();
-  var ratio=Math.max((f.rx*2)/photo.width,(f.ry*2)/photo.height)*1.12;
-  var pw=photo.width*ratio,pdh=photo.height*ratio;
-  ctx.filter='saturate(.95) brightness(1.05) contrast(.97)';
-  ctx.drawImage(photo,f.x-pw/2,f.y-pdh/2-f.ry*0.04,pw,pdh);
-  ctx.filter='none';
-  // warm plastic tint so skin matches the toy
-  ctx.fillStyle='rgba(255,214,196,.14)';ctx.fillRect(f.x-f.rx,f.y-f.ry,f.rx*2,f.ry*2);
-  // inner-rim shadow: darkens photo edges into the head (the moulded look)
-  var rg=ctx.createRadialGradient(f.x,f.y-f.ry*0.15,f.rx*0.35,f.x,f.y,f.rx*1.02);
-  rg.addColorStop(0,'rgba(120,55,40,0)');rg.addColorStop(.72,'rgba(120,55,40,0)');rg.addColorStop(1,'rgba(95,45,35,.5)');
-  ctx.fillStyle=rg;ctx.fillRect(f.x-f.rx,f.y-f.ry,f.rx*2,f.ry*2);
-  // top sheen
-  var tl=ctx.createLinearGradient(0,f.y-f.ry,0,f.y+f.ry);
-  tl.addColorStop(0,'rgba(255,255,255,.34)');tl.addColorStop(.4,'rgba(255,255,255,0)');
-  ctx.fillStyle=tl;ctx.fillRect(f.x-f.rx,f.y-f.ry,f.rx*2,f.ry*2);
+  ctx.beginPath();ctx.ellipse(cx,cy+ry*1.04,rx*0.82,ry*0.14,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(176,98,128,.30)';ctx.filter='blur(6px)';ctx.fill();ctx.restore();
+  // 2) full squishy silhouette base fill (body + ear nubs)
+  ctx.save();
+  earNub(ctx,ear1x,earY,earR);ctx.fillStyle='#ffe3ec';ctx.fill();
+  earNub(ctx,ear2x,earY,earR);ctx.fillStyle='#ffe3ec';ctx.fill();
+  blobPath(ctx,cx,cy,rx,ry);ctx.fillStyle='#ffe3ec';ctx.fill();
   ctx.restore();
-  // soft skin-tone rim blends the seam
-  ctx.beginPath();ctx.ellipse(f.x,f.y,f.rx,f.ry,0,0,Math.PI*2);
-  ctx.lineWidth=7;ctx.strokeStyle='rgba(255,221,194,.5)';ctx.stroke();
-  ctx.lineWidth=2.5;ctx.strokeStyle='rgba(180,120,90,.3)';ctx.stroke();
-  // glossy specular highlight (plastic)
-  ctx.save();ctx.globalAlpha=.55;ctx.beginPath();ctx.ellipse(f.x-f.rx*0.4,f.y-f.ry*0.5,f.rx*0.2,f.ry*0.12,-0.5,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.restore();
+  // 3) clip to BODY blob, paint user's photo to FILL it
+  ctx.save();
+  blobPath(ctx,cx,cy,rx,ry);ctx.clip();
+  var ratio=Math.max((rx*2)/photo.width,(ry*2.12)/photo.height)*1.06;
+  var pw=photo.width*ratio,pdh=photo.height*ratio;
+  ctx.filter='saturate(1.04) brightness(1.04) contrast(.98)';
+  ctx.drawImage(photo,cx-pw/2,cy-pdh/2-ry*0.06,pw,pdh);
+  ctx.filter='none';
+  ctx.fillStyle='rgba(255,150,180,.10)';ctx.fillRect(cx-rx,cy-ry,rx*2,ry*2.2);
+  // inner-rim shadow -> moulded rounded edges (removes pasted seam)
+  var rg=ctx.createRadialGradient(cx,cy-ry*0.18,rx*0.45,cx,cy+ry*0.1,rx*1.18);
+  rg.addColorStop(0,'rgba(110,40,70,0)');rg.addColorStop(.62,'rgba(110,40,70,0)');rg.addColorStop(1,'rgba(90,30,60,.55)');
+  ctx.fillStyle=rg;ctx.fillRect(cx-rx,cy-ry,rx*2,ry*2.2);
+  // glossy top sheen
+  var tl=ctx.createLinearGradient(0,cy-ry,0,cy+ry*0.4);
+  tl.addColorStop(0,'rgba(255,255,255,.38)');tl.addColorStop(.45,'rgba(255,255,255,0)');
+  ctx.fillStyle=tl;ctx.fillRect(cx-rx,cy-ry,rx*2,ry*2);
+  ctx.restore();
+  // 4) tint the ear nubs as same plastic
+  [ear1x,ear2x].forEach(function(ex){
+   ctx.save();earNub(ctx,ex,earY,earR);ctx.clip();
+   var eg=ctx.createRadialGradient(ex-earR*0.3,earY-earR*0.3,earR*0.2,ex,earY,earR);
+   eg.addColorStop(0,'rgba(255,255,255,.7)');eg.addColorStop(.6,'rgba(255,206,222,.6)');eg.addColorStop(1,'rgba(232,136,158,.65)');
+   ctx.fillStyle=eg;ctx.fillRect(ex-earR,earY-earR,earR*2,earR*2);ctx.restore();
+  });
+  // 5) glossy outline wrapping body as one squishy
+  ctx.save();
+  blobPath(ctx,cx,cy,rx,ry);ctx.lineWidth=6;ctx.strokeStyle='rgba(255,255,255,.55)';ctx.stroke();
+  ctx.lineWidth=2;ctx.strokeStyle='rgba(194,65,95,.35)';ctx.stroke();
+  ctx.restore();
+  // 6) signature specular highlights
+  ctx.save();ctx.globalAlpha=.45;ctx.beginPath();
+  ctx.ellipse(cx-rx*0.5,cy-ry*0.66,rx*0.17,ry*0.1,-0.5,0,Math.PI*2);
+  ctx.fillStyle='#fff';ctx.fill();
+  ctx.globalAlpha=.3;ctx.beginPath();ctx.ellipse(cx-rx*0.3,cy-ry*0.74,rx*0.05,ry*0.04,-0.5,0,Math.PI*2);ctx.fill();
+  ctx.restore();
  }
  var lastPhoto=null;
  function run(photo){
@@ -347,8 +380,7 @@ function celebrate(x,y,power){
    try{if(save){save.href=canvas.toDataURL('image/png');save.hidden=false;}}catch(err){}
    var r=canvas.getBoundingClientRect();celebrate(r.left+r.width/2,r.top+r.height*0.4,22);
   }
-  if(base.complete&&base.naturalWidth)setTimeout(draw,420);
-  else base.addEventListener('load',function(){setTimeout(draw,200);},{once:true});
+  setTimeout(draw,420);
  }
  input.addEventListener('change',function(e){
   var f=e.target.files&&e.target.files[0];if(!f)return;

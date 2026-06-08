@@ -439,9 +439,17 @@ section.sec{position:relative;padding:64px 0 56px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.001s!important}.reveal{opacity:1;transform:none}.hero-title .w{transform:none}}
 
 /* DOG CLICK-TO-PLAY VIDEO */
-button.promo-dog.dog-trigger{background:none;border:0;padding:0;cursor:pointer;display:block;position:relative;z-index:5}
-.promo-dog .dog-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;background:rgba(232,136,158,.92);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;padding-left:4px;box-shadow:0 6px 18px rgba(0,0,0,.3);transition:transform .15s ease,background .15s ease;z-index:3;pointer-events:none}
-button.promo-dog.dog-trigger:hover .dog-play{transform:translate(-50%,-50%) scale(1.08);background:rgba(194,65,95,.95)}
+button.promo-dog.dog-trigger{background:none;border:0;padding:0;cursor:pointer;display:block;position:relative;z-index:5;transition:transform .25s ease}
+button.promo-dog.dog-trigger:hover{transform:translateY(-4px) scale(1.04)}
+.promo-dog .dog-still{width:100%;height:auto;display:block;transition:opacity .2s ease}
+.promo-dog .dog-inline{display:none;width:100%;height:auto;border-radius:18px}
+/* MOBILE: inline zoomed playback, no popup */
+@media(max-width:767px){
+  .promo-dog{width:min(70vw,300px)}
+  button.promo-dog.dog-trigger.is-playing{transform:scale(1.35);transform-origin:bottom center;z-index:30}
+  .promo-dog.is-playing .dog-still{display:none}
+  .promo-dog.is-playing .dog-inline{display:block;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+}
 .dog-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
 .dog-modal[hidden]{display:none}
 .dog-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(2px)}
@@ -449,3 +457,50 @@ button.promo-dog.dog-trigger:hover .dog-play{transform:translate(-50%,-50%) scal
 .dog-modal-video{width:100%;height:auto;display:block;border-radius:18px;background:#000;box-shadow:0 24px 60px rgba(0,0,0,.5)}
 .dog-modal-x{position:absolute;top:-16px;right:-16px;width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:#1A1518;font-size:24px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 @media(max-width:520px){.dog-modal-x{top:8px;right:8px}}
+
+/* ===== FUN 1: SQUISH-O-METER ===== */
+.squo-sec{background:linear-gradient(180deg,var(--pink-tint),#FFF0F6)}
+.squo{max-width:440px;margin:0 auto;text-align:center}
+.squo-meter{position:relative;height:18px;border-radius:999px;background:#fde3ec;border:1px solid var(--pink);overflow:hidden;margin:0 auto 30px;max-width:340px;box-shadow:inset 0 2px 5px rgba(180,90,120,.12)}
+.squo-fill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--pink),var(--pink-deep) 70%,var(--flush));border-radius:999px;transition:width .05s linear}
+.squo-max{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:'Assistant';font-weight:800;font-size:9px;letter-spacing:.2em;color:rgba(120,40,70,.55);z-index:2}
+.squo-pad{position:relative;display:block;width:min(74vw,300px);margin:0 auto;background:none;border:0;padding:0;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
+.squo-pad img{width:100%;height:auto;display:block;transform-origin:center 86%;transition:transform .08s cubic-bezier(.2,.9,.25,1.6);filter:drop-shadow(0 16px 18px rgba(0,0,0,.16));pointer-events:none}
+.squo-shadow{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:62%;height:20px;background:rgba(176,98,128,.28);filter:blur(7px);border-radius:50%;z-index:-1;transition:transform .1s ease}
+.squo-pad.squishing .squo-shadow{transform:translateX(-50%) scaleX(1.25)}
+.squo-pad.pop{animation:squoPop .5s cubic-bezier(.2,.9,.25,1.7)}
+@keyframes squoPop{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+.squo-hint{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);font-family:'Rubik',sans-serif;font-weight:800;font-size:13px;color:#fff;background:rgba(26,21,24,.62);padding:7px 16px;border-radius:999px;pointer-events:none;transition:opacity .2s ease;white-space:nowrap}
+.squo-result{margin-top:26px;display:flex;flex-direction:column;align-items:center;gap:7px;animation:popin .5s cubic-bezier(.2,.9,.25,1.7)}
+.squo-kick{font-family:'Rubik',sans-serif;font-weight:800;font-size:18px;color:var(--ink)}
+.squo-prize{font-family:'Assistant';font-weight:600;font-size:13px;color:var(--ink-soft)}
+.squo-code{font-family:'Assistant';font-weight:800;font-size:13px;letter-spacing:.06em;color:var(--pink-deep);border:1.5px dashed var(--pink-deep);padding:9px 20px;border-radius:999px}
+.squo-code b{font-family:'Rubik',sans-serif;font-size:17px;letter-spacing:.04em}
+.squo-again{margin-top:6px;font-family:'Assistant';font-weight:700;font-size:13px;color:var(--ink);background:none;border:1.5px solid var(--ink);border-radius:999px;padding:10px 22px;cursor:pointer;transition:background .25s,color .25s}
+.squo-again:hover{background:var(--ink);color:#fff}
+
+/* ===== FUN 3: BLIND BAG MYSTERY REVEAL ===== */
+.blind-sec{background:linear-gradient(180deg,#EAE2F7,#F4F0FC)}
+.blind-card{max-width:420px;margin:0 auto;text-align:center;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.blind-bag{position:relative;width:min(58vw,210px);height:min(70vw,250px);border:0;cursor:pointer;border-radius:18px 18px 26px 26px;background:linear-gradient(160deg,#fff 0%,var(--pink) 45%,var(--pink-deep) 100%);box-shadow:0 18px 40px rgba(160,80,120,.32),inset 0 2px 8px rgba(255,255,255,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:hidden;transition:transform .3s cubic-bezier(.2,.9,.25,1.5)}
+.blind-bag::before{content:"";position:absolute;top:0;left:0;right:0;height:34px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0 8px,rgba(255,255,255,.15) 8px 16px);border-bottom:2px dashed rgba(255,255,255,.7)}
+.bag-shine{position:absolute;top:-40%;left:-30%;width:60%;height:180%;background:linear-gradient(120deg,transparent,rgba(255,255,255,.55),transparent);transform:rotate(8deg);animation:bagShine 3.2s ease-in-out infinite}
+@keyframes bagShine{0%,100%{left:-40%}50%{left:120%}}
+.bag-mark{font-family:'Rubik',sans-serif;font-weight:800;font-size:78px;color:#fff;text-shadow:0 4px 12px rgba(150,50,90,.4);line-height:1}
+.bag-label{font-family:'Rubik',sans-serif;font-weight:800;font-size:14px;color:#fff;background:rgba(26,21,24,.45);padding:8px 18px;border-radius:999px}
+.blind-bag:hover{transform:translateY(-5px) rotate(-1.5deg)}
+.blind-bag.opening{animation:bagShake .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes bagShake{10%,90%{transform:translateX(-2px) rotate(-2deg)}20%,80%{transform:translateX(4px) rotate(2deg)}30%,50%,70%{transform:translateX(-7px) rotate(-3deg)}40%,60%{transform:translateX(7px) rotate(3deg)}}
+.blind-bag.torn{display:none}
+.blind-reveal{display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;transform:scale(.85);transition:opacity .4s ease,transform .5s cubic-bezier(.2,.9,.25,1.7);position:relative}
+.blind-reveal.show{opacity:1;transform:scale(1)}
+.br-media{width:min(52vw,190px);height:min(52vw,190px);display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#fff,#f7e7f0);border-radius:50%;box-shadow:0 16px 38px rgba(160,80,120,.28)}
+.br-media img{width:80%;height:80%;object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.14));animation:popin .5s cubic-bezier(.2,.9,.25,1.7)}
+.br-kick{font-family:'Assistant';font-weight:800;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--pink-deep)}
+.br-name{font-family:'Rubik',sans-serif;font-weight:800;font-size:20px;color:var(--ink);margin:0}
+.br-price{font-family:'Rubik',sans-serif;font-weight:800;font-size:22px;color:var(--pink-deep)}
+.br-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.br-buy{font-family:'Assistant';font-weight:800;font-size:13px;color:#fff;background:var(--ink);border-radius:999px;padding:12px 22px;text-decoration:none;transition:background .25s}
+.br-buy:hover{background:var(--pink-deep)}
+.br-again{font-family:'Assistant';font-weight:700;font-size:13px;color:var(--ink);background:none;border:1.5px solid var(--ink);border-radius:999px;padding:11px 20px;cursor:pointer;transition:background .25s,color .25s}
+.br-again:hover{background:var(--ink);color:#fff}
