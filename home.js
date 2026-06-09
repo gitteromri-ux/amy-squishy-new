@@ -203,11 +203,12 @@ function celebrate(x,y,power){
   fill.style.width=Math.round(level*100)+'%';
  }
  function loop(){
+  if(maxed){ level=1; setSquish(1); raf=null; return; } // locked full at max
   if(holding){ level=Math.min(1,level+0.022); }
   else { level=Math.max(0,level-0.05); }
   // springy easing for visual squish
   setSquish(level);
-  if(holding && level>=1 && !maxed){ maxed=true; reward(); }
+  if(holding && level>=1 && !maxed){ maxed=true; reward(); raf=null; return; }
   if(holding || level>0){ raf=requestAnimationFrame(loop); } else { raf=null; img.style.transform=''; }
  }
  function start(e){ if(e&&e.cancelable)e.preventDefault(); if(maxed)return; holding=true; pad.classList.add('squishing'); if(hint)hint.style.opacity='0'; if(!raf)raf=requestAnimationFrame(loop); }
@@ -217,15 +218,15 @@ function celebrate(x,y,power){
   var r=pad.getBoundingClientRect();celebrate(r.left+r.width/2,r.top+r.height*0.35,34);
   if(res){res.hidden=false;res.innerHTML='<span class="squo-kick">לחצתם למקסימום! 🎉</span>'+
    '<span class="squo-prize">קוד מתנה ללחיצה המושלמת</span>'+
-   '<span class="squo-code"><b>SQUISH15</b> — 15% הנחה</span>'+
+   '<span class="squo-code"><b>גיטה׳לה</b> — 15% הנחה על כל האתר</span>'+
    '<button class="squo-again" type="button">ללחוץ שוב ↺</button>';}
-  setTimeout(function(){ holding=false; },50);
+  holding=false;
  }
  pad.addEventListener('pointerdown',start);
  window.addEventListener('pointerup',end);
  pad.addEventListener('pointercancel',end);
  pad.addEventListener('pointerleave',function(){ if(!maxed)end(); });
- if(res){res.addEventListener('click',function(e){ if(e.target.closest('.squo-again')){ maxed=false;level=0;res.hidden=true;pad.classList.remove('pop');if(hint)hint.style.opacity=''; } });}
+ if(res){res.addEventListener('click',function(e){ if(e.target.closest('.squo-again')){ maxed=false;level=0;img.style.transform='';if(fill)fill.style.width='0%';res.hidden=true;pad.classList.remove('pop');if(hint)hint.style.opacity=''; } });}
 }());
 
 /* ---------- FUN 2: color the squishy ---------- */
