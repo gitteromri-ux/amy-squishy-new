@@ -306,69 +306,47 @@ function celebrate(x,y,power){
  var input=$('#makeInput'),canvas=$('#makeCanvas'),ph=$('#makePlaceholder'),load=$('#makeLoading'),save=$('#makeSave');
  if(!input||!canvas)return;
  var ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
- // soft squishy-blob silhouette: a chubby rounded body with two little ear-nubs on top.
- function blobPath(c,cx,cy,rx,ry){
-  c.beginPath();
-  var k=0.5523;
-  var topY=cy-ry, botY=cy+ry*1.06, lX=cx-rx, rX=cx+rx*1.0;
-  c.moveTo(cx,topY);
-  c.bezierCurveTo(cx+rx*k*1.05,topY, rX,cy-ry*k, rX,cy+ry*0.04);
-  c.bezierCurveTo(rX,cy+ry*k*1.12, cx+rx*k*0.92,botY, cx,botY);
-  c.bezierCurveTo(cx-rx*k*0.92,botY, lX,cy+ry*k*1.12, lX,cy+ry*0.04);
-  c.bezierCurveTo(lX,cy-ry*k, cx-rx*k*1.05,topY, cx,topY);
-  c.closePath();
- }
- function earNub(c,cx,cy,r){c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.closePath();}
+ // Real 3D squishy-toy template (transparent PNG): pink glossy body + ears, with a
+ // cream face-window in the middle. We composite the user's face INTO that window so
+ // the genuine rendered gloss/shadow/ears wrap their photo -> looks molded, not pasted.
+ var TPL=new Image(); var tplReady=false;
+ TPL.onload=function(){tplReady=true;};
+ TPL.src='assets/img/squishy-template.png';
+ // Face-window position inside the template (fractions, measured from the render)
+ var FW={cx:0.485, cy:0.555, rx:0.232, ry:0.250};
  function squishify(photo){
   ctx.clearRect(0,0,W,H);
-  var cx=W/2, cy=H*0.46, rx=W*0.40, ry=H*0.38;
-  var earR=rx*0.30, ear1x=cx-rx*0.62, ear2x=cx+rx*0.62, earY=cy-ry*0.88;
-  // 1) soft pedestal shadow under the squishy
+  // template is square; fit it centered into the canvas
+  var S=Math.min(W,H), ox=(W-S)/2, oy=(H-S)/2;
+  var cx=ox+FW.cx*S, cy=oy+FW.cy*S, rx=FW.rx*S, ry=FW.ry*S;
+  // 1) paint the user's face into the cream window, masked to a soft oval
   ctx.save();
-  ctx.beginPath();ctx.ellipse(cx,cy+ry*1.04,rx*0.82,ry*0.14,0,0,Math.PI*2);
-  ctx.fillStyle='rgba(176,98,128,.30)';ctx.filter='blur(6px)';ctx.fill();ctx.restore();
-  // 2) full squishy silhouette base fill (body + ear nubs)
-  ctx.save();
-  earNub(ctx,ear1x,earY,earR);ctx.fillStyle='#ffe3ec';ctx.fill();
-  earNub(ctx,ear2x,earY,earR);ctx.fillStyle='#ffe3ec';ctx.fill();
-  blobPath(ctx,cx,cy,rx,ry);ctx.fillStyle='#ffe3ec';ctx.fill();
-  ctx.restore();
-  // 3) clip to BODY blob, paint user's photo to FILL it
-  ctx.save();
-  blobPath(ctx,cx,cy,rx,ry);ctx.clip();
-  var ratio=Math.max((rx*2)/photo.width,(ry*2.12)/photo.height)*1.06;
-  var pw=photo.width*ratio,pdh=photo.height*ratio;
-  ctx.filter='saturate(1.04) brightness(1.04) contrast(.98)';
-  ctx.drawImage(photo,cx-pw/2,cy-pdh/2-ry*0.06,pw,pdh);
+  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.closePath();ctx.clip();
+  // cover-fit the photo into the oval, framing the upper-face a touch higher
+  var ratio=Math.max((rx*2)/photo.width,(ry*2)/photo.height)*1.04;
+  var pw=photo.width*ratio, pdh=photo.height*ratio;
+  ctx.filter='saturate(1.06) brightness(1.05) contrast(.97)';
+  ctx.drawImage(photo, cx-pw/2, cy-pdh/2-ry*0.02, pw, pdh);
   ctx.filter='none';
-  ctx.fillStyle='rgba(255,150,180,.10)';ctx.fillRect(cx-rx,cy-ry,rx*2,ry*2.2);
-  // inner-rim shadow -> moulded rounded edges (removes pasted seam)
-  var rg=ctx.createRadialGradient(cx,cy-ry*0.18,rx*0.45,cx,cy+ry*0.1,rx*1.18);
-  rg.addColorStop(0,'rgba(110,40,70,0)');rg.addColorStop(.62,'rgba(110,40,70,0)');rg.addColorStop(1,'rgba(90,30,60,.55)');
-  ctx.fillStyle=rg;ctx.fillRect(cx-rx,cy-ry,rx*2,ry*2.2);
-  // glossy top sheen
-  var tl=ctx.createLinearGradient(0,cy-ry,0,cy+ry*0.4);
-  tl.addColorStop(0,'rgba(255,255,255,.38)');tl.addColorStop(.45,'rgba(255,255,255,0)');
+  // warm cream tint so skin reads like the toy's material
+  ctx.fillStyle='rgba(255,228,205,.16)';ctx.fillRect(cx-rx,cy-ry,rx*2,ry*2);
+  // inner-rim shadow -> the face sinks INTO the molded window (kills the pasted seam)
+  var rg=ctx.createRadialGradient(cx,cy-ry*0.12,Math.min(rx,ry)*0.55,cx,cy,Math.max(rx,ry)*1.04);
+  rg.addColorStop(0,'rgba(120,70,40,0)');rg.addColorStop(.66,'rgba(120,70,40,0)');rg.addColorStop(1,'rgba(120,70,45,.50)');
+  ctx.fillStyle=rg;ctx.fillRect(cx-rx,cy-ry,rx*2,ry*2);
+  // soft top sheen across the face so it shares the toy's glossy light
+  var tl=ctx.createLinearGradient(0,cy-ry,0,cy+ry*0.3);
+  tl.addColorStop(0,'rgba(255,255,255,.30)');tl.addColorStop(.5,'rgba(255,255,255,0)');
   ctx.fillStyle=tl;ctx.fillRect(cx-rx,cy-ry,rx*2,ry*2);
   ctx.restore();
-  // 4) tint the ear nubs as same plastic
-  [ear1x,ear2x].forEach(function(ex){
-   ctx.save();earNub(ctx,ex,earY,earR);ctx.clip();
-   var eg=ctx.createRadialGradient(ex-earR*0.3,earY-earR*0.3,earR*0.2,ex,earY,earR);
-   eg.addColorStop(0,'rgba(255,255,255,.7)');eg.addColorStop(.6,'rgba(255,206,222,.6)');eg.addColorStop(1,'rgba(232,136,158,.65)');
-   ctx.fillStyle=eg;ctx.fillRect(ex-earR,earY-earR,earR*2,earR*2);ctx.restore();
-  });
-  // 5) glossy outline wrapping body as one squishy
-  ctx.save();
-  blobPath(ctx,cx,cy,rx,ry);ctx.lineWidth=6;ctx.strokeStyle='rgba(255,255,255,.55)';ctx.stroke();
-  ctx.lineWidth=2;ctx.strokeStyle='rgba(194,65,95,.35)';ctx.stroke();
-  ctx.restore();
-  // 6) signature specular highlights
-  ctx.save();ctx.globalAlpha=.45;ctx.beginPath();
-  ctx.ellipse(cx-rx*0.5,cy-ry*0.66,rx*0.17,ry*0.1,-0.5,0,Math.PI*2);
-  ctx.fillStyle='#fff';ctx.fill();
-  ctx.globalAlpha=.3;ctx.beginPath();ctx.ellipse(cx-rx*0.3,cy-ry*0.74,rx*0.05,ry*0.04,-0.5,0,Math.PI*2);ctx.fill();
-  ctx.restore();
+  // 2) draw the real toy template ON TOP -> its glossy edge laps over the face oval,
+  //    blending the photo into the molded cream rim, plus real ears + body + shadow.
+  if(tplReady){ ctx.drawImage(TPL, ox, oy, S, S); }
+  // 3) a faint specular catchlight on the face glass to match the toy's sheen
+  ctx.save();ctx.globalAlpha=.18;
+  var sg=ctx.createRadialGradient(cx-rx*0.4,cy-ry*0.46,1,cx-rx*0.4,cy-ry*0.46,rx*0.26);
+  sg.addColorStop(0,'#fff');sg.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=sg;ctx.beginPath();ctx.ellipse(cx-rx*0.4,cy-ry*0.46,rx*0.26,ry*0.16,-0.5,0,Math.PI*2);ctx.fill();ctx.restore();
  }
  var lastPhoto=null;
  function run(photo){
