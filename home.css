@@ -429,8 +429,12 @@ section.sec{position:relative;padding:64px 0 56px}
 @keyframes bgdrift{0%{background-position:0% 0%,100% 100%,50% 0%}100%{background-position:100% 60%,0% 0%,28% 100%}}
 
 /* reveal + keyframes */
-.reveal{opacity:0;transform:translateY(34px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal{opacity:0;transform:translateY(22px) scale(.985);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);will-change:opacity,transform}
 .reveal.in{opacity:1;transform:none}
+/* staggered children inside a revealed group */
+.reveal-group>*{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal-group.in>*{opacity:1;transform:none}
+.reveal-group.in>*{transition-delay:calc(var(--si,0)*.07s)}
 @keyframes wordin{to{transform:translateY(0)}}
 @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
 @keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.03,.97)}}
@@ -504,3 +508,58 @@ button.promo-dog.dog-trigger:hover{transform:translateY(-4px) scale(1.04)}
 .br-buy:hover{background:var(--pink-deep)}
 .br-again{font-family:'Assistant';font-weight:700;font-size:13px;color:var(--ink);background:none;border:1.5px solid var(--ink);border-radius:999px;padding:11px 20px;cursor:pointer;transition:background .25s,color .25s}
 .br-again:hover{background:var(--ink);color:#fff}
+
+/* ============================================================
+   PREMIUM MOTION LAYER (mobile-safe, GPU-only: transform+opacity)
+   ============================================================ */
+
+/* 1. Scroll progress bar — top of page */
+.scroll-prog{position:fixed;top:0;left:0;right:0;height:3px;z-index:9998;transform-origin:0 50%;transform:scaleX(0);
+  background:linear-gradient(90deg,var(--flush),var(--pink-deep) 50%,var(--sky-deep));pointer-events:none;will-change:transform}
+
+/* 2. Premium card hover — fold-slider cards (categories/featured/blog/etc) */
+.fs-item{transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .45s cubic-bezier(.2,.8,.2,1)}
+@media(hover:hover) and (pointer:fine){
+  .fs-item:hover{transform:translateY(-8px);box-shadow:0 26px 50px -18px rgba(26,21,24,.32)}
+  .fs-item img{transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+  .fs-item:hover img{transform:scale(1.05)}
+}
+
+/* 3. Section title — soft reveal with underline sweep */
+h2.reveal{position:relative}
+h2.reveal .script{position:relative}
+h2.reveal.in .script::after{content:"";position:absolute;right:0;bottom:-.08em;height:.08em;width:100%;
+  background:linear-gradient(90deg,var(--flush),var(--pink-deep));border-radius:99px;transform:scaleX(0);transform-origin:right;
+  animation:underlineSweep .7s .35s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes underlineSweep{to{transform:scaleX(1)}}
+
+/* 4. Hero — gentle floating glow + parallax-ready layer */
+.hero-bg img{will-change:transform}
+.hero-copy{will-change:transform}
+
+/* 5. Stats count-up pulse on reveal */
+.snum.counting{animation:statPop .6s cubic-bezier(.2,.9,.25,1.6)}
+@keyframes statPop{0%{transform:scale(.78)}55%{transform:scale(1.1)}100%{transform:scale(1)}}
+
+/* 6. CTA buttons — premium sheen sweep on hover (btn already has its own transition+overflow) */
+.btn::after{content:"";position:absolute;top:0;left:-120%;width:48%;height:100%;
+  background:linear-gradient(110deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);pointer-events:none;mix-blend-mode:overlay}
+@media(hover:hover) and (pointer:fine){
+  .btn:hover::after{animation:btnSheen .65s ease forwards}
+}
+.btn:active{transform:scale(.97)}
+@keyframes btnSheen{to{left:160%}}
+
+/* 7. DESKTOP-ONLY GSAP scroll-telling helpers (mobile keeps pure CSS) */
+@media(min-width:900px){
+  .gsap-parallax{will-change:transform}
+}
+
+/* 8. Respect reduced motion — kill all premium extras */
+@media (prefers-reduced-motion:reduce){
+  .scroll-prog{display:none}
+  .reveal-group>*{opacity:1!important;transform:none!important}
+  h2.reveal.in .script::after{animation:none;transform:scaleX(1)}
+  .snum.counting{animation:none}
+  .btn::after{display:none}
+}

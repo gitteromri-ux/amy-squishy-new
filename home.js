@@ -102,6 +102,7 @@ $$('[data-slider]').forEach(initSlider);
   if(!e.isIntersecting)return;io.unobserve(e.target);
   var el=e.target,to=+el.getAttribute('data-count'),t0=null,dur=1200;
   if(reduce){el.textContent=to;return;}
+  el.classList.add('counting');setTimeout(function(){el.classList.remove('counting');},650);
   (function tick(ts){if(!t0)t0=ts;var k=Math.min(1,(ts-t0)/dur),v=Math.round(to*(1-Math.pow(1-k,3)));el.textContent=v;if(k<1)requestAnimationFrame(tick);})(performance.now());
  });},{threshold:.5});
  nums.forEach(function(n){io.observe(n);});
@@ -390,6 +391,64 @@ function celebrate(x,y,power){
  window.addEventListener('scroll',inView,{passive:true});
  window.addEventListener('load',inView);
  setTimeout(showAll,1500);
+}());
+
+/* ---------- PREMIUM MOTION LAYER ---------- */
+(function(){
+ if(reduce)return;
+
+ /* 1. scroll progress bar */
+ var bar=document.createElement('div');bar.className='scroll-prog';bar.setAttribute('aria-hidden','true');
+ document.body.appendChild(bar);
+ var ticking=false;
+ function onScroll(){
+  if(ticking)return;ticking=true;
+  requestAnimationFrame(function(){
+   var st=window.pageYOffset||document.documentElement.scrollTop;
+   var h=(document.documentElement.scrollHeight-window.innerHeight)||1;
+   bar.style.transform='scaleX('+Math.min(1,Math.max(0,st/h))+')';
+   ticking=false;
+  });
+ }
+ window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+ /* 2. stagger indices for reveal-group children */
+ $$('.reveal-group').forEach(function(g){
+  Array.prototype.forEach.call(g.children,function(c,i){c.style.setProperty('--si',i);});
+ });
+
+ /* 3. DESKTOP-ONLY GSAP scroll-telling (hero parallax). Mobile stays pure CSS. */
+ var isDesktop=window.matchMedia('(min-width:900px) and (pointer:fine)').matches;
+ if(!isDesktop)return;
+ var s=document.createElement('script');
+ s.src='https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js';
+ s.onload=function(){
+  var st=document.createElement('script');
+  st.src='https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js';
+  st.onload=initGsap;document.head.appendChild(st);
+ };
+ s.onerror=function(){};
+ document.head.appendChild(s);
+
+ function initGsap(){
+  if(!window.gsap||!window.ScrollTrigger)return;
+  gsap.registerPlugin(ScrollTrigger);
+  /* hero background gentle parallax */
+  var heroImg=document.querySelector('.hero-bg img');
+  if(heroImg){
+   gsap.to(heroImg,{yPercent:14,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:.6}});
+  }
+  /* hero copy lifts slightly slower than scroll */
+  var heroCopy=document.querySelector('.hero-copy');
+  if(heroCopy){
+   gsap.to(heroCopy,{yPercent:-8,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:.6}});
+  }
+  /* owner portrait subtle parallax if present */
+  var ownerImg=document.querySelector('.owner-sec img');
+  if(ownerImg){
+   gsap.fromTo(ownerImg,{yPercent:8},{yPercent:-8,ease:'none',scrollTrigger:{trigger:'.owner-sec',start:'top bottom',end:'bottom top',scrub:.8}});
+  }
+ }
 }());
 
 })();
