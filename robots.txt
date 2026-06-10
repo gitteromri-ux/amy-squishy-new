@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gitteromri-ux.github.io/amy-squishy-new/sitemap.xml
