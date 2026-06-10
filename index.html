@@ -42,27 +42,74 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Store",
+  "@type": "OnlineStore",
+  "@id": "https://gitteromri-ux.github.io/amy-squishy-new/#store",
   "name": "איימי סקווישי",
-  "alternateName": [
-    "Amy Squishy",
-    "Aimee Squishy"
-  ],
+  "legalName": "איימי סקווישי",
+  "alternateName": ["Amy Squishy", "Aimee Squishy"],
   "url": "https://gitteromri-ux.github.io/amy-squishy-new/",
   "logo": "https://gitteromri-ux.github.io/amy-squishy-new/assets/amy-owner-avatar.png",
   "image": "https://gitteromri-ux.github.io/amy-squishy-new/assets/products/sq-001.webp",
-  "description": "חנות הסקווישי המובילה בישראל - מגוון רחב של סקווישי, בליינד בגז וצעצועי לחיצה.",
+  "description": "חנות הסקווישי הגדולה בישראל. מגוון רחב של סקווישי, בליינד בגז וצעצועי לחיצה איכותיים.",
   "email": "hi@amysquishy.co.il",
+  "telephone": "+972-54-000-0000",
+  "foundingDate": "2025",
   "address": {
     "@type": "PostalAddress",
     "addressCountry": "IL",
-    "addressLocality": "ירושלים"
+    "addressLocality": "ירושלים",
+    "addressRegion": "מחוז ירושלים"
   },
-  "areaServed": {
-    "@type": "Country",
-    "name": "Israel"
+  "areaServed": { "@type": "Country", "name": "Israel" },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+972-54-000-0000",
+    "email": "hi@amysquishy.co.il",
+    "contactType": "customer service",
+    "areaServed": "IL",
+    "availableLanguage": ["Hebrew", "English"]
   },
-  "sameAs": []
+  "paymentAccepted": ["Credit Card", "Bit", "PayPal"],
+  "currenciesAccepted": "ILS",
+  "openingHoursSpecification": [
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"], "opens": "09:00", "closes": "18:00" },
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Friday", "opens": "09:00", "closes": "13:00" }
+  ],
+  "sameAs": [
+    "https://www.instagram.com/amysquishy",
+    "https://www.tiktok.com/@amysquishy",
+    "https://www.facebook.com/amysquishy"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://gitteromri-ux.github.io/amy-squishy-new/#org",
+  "name": "איימי סקווישי",
+  "url": "https://gitteromri-ux.github.io/amy-squishy-new/",
+  "logo": "https://gitteromri-ux.github.io/amy-squishy-new/assets/amy-owner-avatar.png",
+  "email": "hi@amysquishy.co.il",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+972-54-000-0000",
+    "email": "hi@amysquishy.co.il",
+    "contactType": "customer service",
+    "areaServed": "IL",
+    "availableLanguage": ["Hebrew", "English"]
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "בית", "item": "https://gitteromri-ux.github.io/amy-squishy-new/" },
+    { "@type": "ListItem", "position": 2, "name": "חנות", "item": "https://gitteromri-ux.github.io/amy-squishy-new/shop.html" },
+    { "@type": "ListItem", "position": 3, "name": "הסיפור שלנו", "item": "https://gitteromri-ux.github.io/amy-squishy-new/about.html" }
+  ]
 }
 </script>
 <script type="application/ld+json">
@@ -496,5 +543,44 @@
     </g>
   </svg>
 </template>
+<!-- SITE FOOTER -->
+<footer class="site-footer" style="background:#fff;border-top:1px solid #f4dde7;padding:36px 20px 28px;margin-top:40px;color:#5a4d5f;font-family:'Assistant','Rubik',system-ui,sans-serif;text-align:center">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:24px 36px;margin-bottom:22px;text-align:start">
+      <div style="min-width:200px">
+        <div style="font-weight:800;font-size:18px;color:#D5567A;margin-bottom:8px">איימי סקווישי</div>
+        <div style="font-size:14px;line-height:1.7">חנות הסקווישי הגדולה בישראל.<br>משלוחים לכל הארץ.</div>
+      </div>
+      <div style="min-width:180px">
+        <div style="font-weight:700;font-size:15px;color:#2a2230;margin-bottom:8px">צרו קשר</div>
+        <div style="font-size:14px;line-height:1.9">
+          <a href="mailto:hi@amysquishy.co.il" style="color:#D5567A;text-decoration:none">hi@amysquishy.co.il</a><br>
+          <a href="https://wa.me/972540000000" target="_blank" rel="noopener" style="color:#D5567A;text-decoration:none">054-000-0000 (וואטסאפ)</a><br>
+          ירושלים, ישראל
+        </div>
+      </div>
+      <div style="min-width:160px">
+        <div style="font-weight:700;font-size:15px;color:#2a2230;margin-bottom:8px">מידע</div>
+        <div style="font-size:14px;line-height:2">
+          <a href="about.html" style="color:#5a4d5f;text-decoration:none;display:block">הסיפור שלנו</a>
+          <a href="shipping.html" style="color:#5a4d5f;text-decoration:none;display:block">משלוחים והחזרות</a>
+          <a href="contact.html" style="color:#5a4d5f;text-decoration:none;display:block">יצירת קשר</a>
+        </div>
+      </div>
+      <div style="min-width:160px">
+        <div style="font-weight:700;font-size:15px;color:#2a2230;margin-bottom:8px">תקנון</div>
+        <div style="font-size:14px;line-height:2">
+          <a href="privacy.html" style="color:#5a4d5f;text-decoration:none;display:block">מדיניות פרטיות</a>
+          <a href="terms.html" style="color:#5a4d5f;text-decoration:none;display:block">תנאי שימוש</a>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid #f4dde7;padding-top:18px;font-size:13px;color:#9a8d9f">
+      © 2026 איימי סקווישי. כל הזכויות שמורות.
+    </div>
+  </div>
+</footer>
+<!-- /SITE FOOTER -->
+
 </body>
 </html>
